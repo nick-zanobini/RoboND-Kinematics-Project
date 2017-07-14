@@ -16,6 +16,7 @@ import tf
 from kuka_arm.srv import *
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from geometry_msgs.msg import Pose
+from std_msgs.msg import String
 from IK_variables import *
 from mpmath import *
 from sympy import *
@@ -23,8 +24,14 @@ from sympy import *
 
 print("Loaded IK variables")
 
+global cycles
+global pub
+cycles = 1
+
 
 def handle_calculate_IK(req):
+    global cycles
+    global pub
     rospy.loginfo("Received %s eef-poses from the plan" % len(req.poses))
     if len(req.poses) < 1:
         print("No valid poses received")
@@ -115,15 +122,22 @@ def handle_calculate_IK(req):
         joint_trajectory_point.positions = [np.float64(theta1), np.float64(theta2), np.float64(theta3), np.float64(theta4), np.float64(theta5), np.float64(theta6)]
         joint_trajectory_list.append(joint_trajectory_point)
         # print("Calculated all thetas")
-
+        msg = String()
+        msg.data = str(int(floor(cycles / 2)))
+        rospy.loginfo("Total # of cylinders picked up: " + str(int(floor(cycles / 2))))
+        if (int(cycles) % 2) == 0:
+            pub.publish(msg)
+        cycles += 1
         rospy.loginfo("length of Joint Trajectory List: %s" % len(joint_trajectory_list))
         return CalculateIKResponse(joint_trajectory_list)
 
 
 def IK_server():
+    global pub
     # initialize node and declare calculate_ik service
     rospy.init_node('IK_server')
     s = rospy.Service('calculate_ik', CalculateIK, handle_calculate_IK)
+    pub = rospy.Publisher('cycles', String, queue_size=1)
     print("Ready to receive an IK request")
     rospy.spin()
 
