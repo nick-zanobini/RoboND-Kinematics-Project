@@ -1,12 +1,75 @@
 ## Project: Kinematics Pick & Place
-### Writeup Template: You can use this file as a template for your writeup if you want to submit it as a markdown file, but feel free to use some other method and submit a pdf if you prefer.
-
 ---
+
+To run projects from this repository you need version 7.7.0+
+If your gazebo version is not 7.7.0+, perform the update as follows:
+```sh
+$ sudo sh -c 'echo "deb http://packages.osrfoundation.org/gazebo/ubuntu-stable `lsb_release -cs` main" > /etc/apt/sources.list.d/gazebo-stable.list'
+$ wget http://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add -
+$ sudo apt-get update
+$ sudo apt-get install gazebo7
+```
+
+Once again check if the correct version was installed:
+```sh
+$ gazebo --version
+```
+### For the rest of this setup, catkin_ws is the name of active ROS Workspace, if your workspace name is different, change the commands accordingly
+
+If you do not have an active ROS workspace, you can create one by:
+```sh
+$ mkdir -p ~/catkin_ws/src
+$ cd ~/catkin_ws/
+$ catkin_make
+```
+
+Now that you have a workspace, clone or download this repo into the **src** directory of your workspace:
+```sh
+$ cd ~/catkin_ws/src
+$ git clone https://github.com/nick-zanobini/RoboND-Kinematics-Project.git
+```
+
+Now from a terminal window:
+
+```sh
+$ cd ~/catkin_ws
+$ rosdep install --from-paths src --ignore-src --rosdistro=kinetic -y
+$ cd ~/catkin_ws/src/RoboND-Kinematics-Project/kuka_arm/scripts
+$ sudo chmod +x target_spawn.py
+$ sudo chmod +x IK_server.py
+$ sudo chmod +x safe_spawner.sh
+```
+Build the project:
+```sh
+$ cd ~/catkin_ws
+$ catkin_make
+```
+
+Add following to your .bashrc file
+```
+export GAZEBO_MODEL_PATH=~/catkin_ws/src/RoboND-Kinematics-Project/kuka_arm/models
+
+source ~/catkin_ws/devel/setup.bash
+```
+
+You can launch the project by
+```sh
+$ cd ~/catkin_ws/src/RoboND-Kinematics-Project/kuka_arm/scripts
+$ ./safe_spawner.sh
+```
+
+Once Gazebo and rviz are up and running, make sure you see following in the gazebo world:
+
+    - Robot
+    
+    - Shelf
+    
+    - Blue cylindrical target in one of the shelves
+    
+    - Dropbox right next to the robot
 
 
 **Steps to complete the project:**  
-
-
 1. Set up your ROS Workspace.
 2. Download or clone the [project repository](https://github.com/udacity/RoboND-Kinematics-Project) into the ***src*** directory of your ROS Workspace.  
 3. Experiment with the forward_kinematics environment and get familiar with the robot.
@@ -17,7 +80,7 @@
 
 [//]: # (Image References)
 
-[relative_joint_locations]: ./misc_images/relJointLocations.jpg
+[relative_joint_locations]: ./misc_images/relJointLocations.JPG
 [URDF_frame]: ./misc_images/URDF_frame.JPG
 [world_frame]: ./misc_images/world_frame.JPG
 [combine_frame]: ./misc_images/combined.jpg
@@ -28,20 +91,13 @@
 ### Here I will consider the rubric points individually and describe how I addressed each point in my implementation.  
 
 ---
-### Writeup / README
-
-#### 1. Provide a Writeup / README that includes all the rubric points and how you addressed each one.  You can submit your writeup as markdown or pdf.  
-
-You're reading it!
-
 ### Kinematic Analysis
 #### 1. Run the forward_kinematics demo and evaluate the kr210.urdf.xacro file to perform kinematic analysis of Kuka KR210 robot and derive its DH parameters.
 
-Here is an example of how to include an image in your writeup.
-
+The DH parameters were derived from the arm according to these axis assignments
 ![alt text][relative_joint_locations]
 
-Relative Position of joint<sub> i-1</sub> to joint <sub> i</sub> in meters (m). 
+##### Table 1: Relative Position of joint<sub>i-1</sub> to joint <sub>i</sub> in meters (m). 
 
 | joint | x | y | z | roll | pitch | yaw |
 | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
@@ -53,7 +109,13 @@ joint<sub>5</sub> | 0.54 | 0 | 0 | 0 | 0 | 0 |
 joint<sub>6</sub> | 0.193 | 0 | 0 | 0 | 0 | 0 |
 gripper | 0.11 | 0 | 0 | 0 | 0 | 0 |
 
-| joint | α<sub>i-1</sub> | ɑ<sub>i-1</sub> |ɗ<sub>i</sub> | θ |
+##### Table 2: Modified DH Parameters
+α<sub>i-1</sub>: twist angle, angle between Ζ<sub>i-1</sub> and Ζ measured about Χ<sub>i-1</sub>  
+ɑ<sub>i-1</sub>: link length, distance from Ζ<sub>i-1</sub> and Ζ measured about Χ<sub>i-1</sub>  
+ɗ<sub>i</sub>: link offset, signed distance from Χ<sub>i-1</sub> to Χ<sub>i</sub> measured along Ζ<sub>i</sub>  
+θ<sub>i</sub>: joing angle, angle between Χ<sub>i-1</sub> to Χ<sub>i</sub>
+
+| joint | α<sub>i-1</sub> | ɑ<sub>i-1</sub> |ɗ<sub>i</sub> | θ<sub>i</sub> |
 | :---: | :---: | :---: | :---: | :---: |
 joint<sub>1</sub> | 0 | 0 | 0.75 | q1 |
 joint<sub>2</sub> | <sup>-π</sup>&frasl;<sub>2</sub> | 0.35 | 0 | q2: q2 - <sup>π</sup>&frasl;<sub>2</sub> |
@@ -149,8 +211,25 @@ As shown below the URDF frame is different from our world frame so we need to ap
 
 Here I'll talk about the code, what techniques I used, what worked and why, where the implementation might fail and how I might improve it if I were going to pursue this project further.  
 
+Gripper Position: `P_EE = Matrix([[px, py, pz]])`  
+Wrist Center Position: `P_WC` is a matrix with the format `[pwc_x, pwc_y, p_wc_z]`  
+The function N() is used to evaluate pi throughout the program.
+1. Find the position of the wrist center
 
-And just for fun, another example image:
-![alt text][image3]
+    Given the position of the gripper we can find the position of the wrist center: `P_WC = simplify(P_EE - (0.303) * R0_6 * Matrix([[0], [0], [1]]))`
 
+1. Find θ<sub>1</sub>
 
+     ` theta1 = N(atan2(P_WC[1], P_WC[0]))`
+     
+1. Find Find θ<sub>3</sub>
+
+    
+    
+1. Find Find θ<sub>1</sub>
+
+1. Find Find θ<sub>1</sub>
+
+1. Find Find θ<sub>1</sub>
+
+1. Find Find θ<sub>1</sub>
