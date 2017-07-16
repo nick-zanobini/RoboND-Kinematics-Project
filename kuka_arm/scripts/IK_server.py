@@ -86,7 +86,7 @@ def handle_calculate_IK(req):
             theta_22 = atan2(z_c, sqrt(x_c**2 + y_c**2))
             theta2 = N(((pi / 2) - theta_21 - theta_22).subs(s))
 
-            R0_3_inv = R0_3.evalf(subs={q1: theta1, q2: theta2, q3: theta3})
+            R0_3_inv = R0_3_inv_sym.evalf(subs={q1: theta1, q2: theta2, q3: theta3})
             R3_6 = np.array(R0_3_inv * R0_6).astype(np.float64)
 
             # Individual Rotation Matrix elements for theta4 theta5 and theta6 calculations
@@ -96,6 +96,7 @@ def handle_calculate_IK(req):
 
             if np.abs(r23) is not 1:
                 theta5 = atan2(sqrt(r13**2 + r33**2), r23)
+                # workaround for smooth movement
                 if sin(theta5) < 0:
                     theta4 = atan2(-r33, r13)
                     theta6 = atan2(r22, -r21)

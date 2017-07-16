@@ -201,9 +201,12 @@ As shown below the URDF frame is different from our world frame so we need to ap
 
 #### 3. Decouple Inverse Kinematics problem into Inverse Position Kinematics and inverse Orientation Kinematics; doing so derive the equations to calculate all individual joint angles.
 
+Inverse Kinematics: `R = R0_3 * R3_6`  
+Inverse Position Kinematics: `R0_3`  : 0<sub>1</sub>, 0<sub>2</sub>, 0<sub>3</sub>  
+Inverse Orientation Kinematics: `R3_6 = R0_3.inv() * R0_6` : 0<sub>4</sub>, 0<sub>5</sub>, 0<sub>6</sub>
 
-
-
+Wrist Center: `P_EE - d7 * R0_6 * [0;0;1]
+ 
 ### Project Implementation
 
 #### 1. Fill in the `IK_server.py` file with properly commented python code for calculating Inverse Kinematics based on previously performed Kinematic Analysis. Your code must guide the robot to successfully complete 8/10 pick and place cycles. Briefly discuss the code you implemented and your results. 
@@ -220,16 +223,71 @@ The function N() is used to evaluate pi throughout the program.
 
 1. Find θ<sub>1</sub>
 
-     ` theta1 = N(atan2(P_WC[1], P_WC[0]))`
-     
+     ```
+     theta1 = N(atan2(P_WC[1], P_WC[0]))
+     ```
+
 1. Find Find θ<sub>3</sub>
+    ```
+    # Calculate theta3
+    P0_2 = P_2_sym.evalf(subs={q1: theta1})
+    x_c, y_c, z_c = P_WC - P0_2[0:3, :]
+    ```
+    ```
+    # link lengths
+    l_23 = a2
+    l_35 = sqrt(a3**2 + d4**2)
+    l_25 = sqrt(x_c**2 + y_c**2 + z_c**2)
+    ```
+    ```
+    # Intermediate angles for theta3
+    D1 = (l_25**2 - l_23**2 - l_35**2) / (2 * l_23 * l_35)
+    theta_31 = atan2(a3, d4)
+    theta_32 = atan2(sqrt(1 - D1**2), D1)
+    theta3 = N((theta_32 + theta_31 - (pi / 2)).subs(s))
+    ```
 
-    
-    
-1. Find Find θ<sub>1</sub>
+1. Find Find θ<sub>2</sub>
+    ```
+    # Calculate theta2
+    D2 = (l_23**2 - l_35**2 + l_25**2) / (2 * l_23 * l_25)
+    theta_21 = atan2(sqrt(1 - D2**2), D2)
+    theta_22 = atan2(z_c, sqrt(x_c**2 + y_c**2))
+    theta2 = N(((pi / 2) - theta_21 - theta_22).subs(s))
+    ```
 
-1. Find Find θ<sub>1</sub>
+1. Find Find θ<sub>4</sub>, θ<sub>5</sub> and θ<sub>6</sub>
+    ```
+    # Rotation Matrices for theta4 theta5 and theta6 calculations
+    R_corr = rot_z(pi) * rot_y(-pi / 2)
+    R0_6 = R0_6[0:3, 0:3] * R_corr
+    R0_3_inv_sym = simplify((T0_3[0:3, 0:3]).inv())
+    R0_3_inv = R0_3_inv_sym.evalf(subs={q1: theta1, q2: theta2, q3: theta3})
+    R3_6 = np.array(R0_3_inv * R0_6).astype(np.float64)
+    ```
+    ```
+    # Individual Rotation Matrix elements for theta4 theta5 and theta6 calculations
+    r12, r13 = R3_6[0, 1], R3_6[0, 2]
+    r21, r22, r23 = R3_6[1, 0], R3_6[1, 1], R3_6[1, 2]
+    r32, r33 = R3_6[2, 1], R3_6[2, 2]
+    ```
+    ```
+    # Calculate theta4, theta5 and theta6
+    if np.abs(r23) is not 1:
+        theta5 = atan2(sqrt(r13**2 + r33**2), r23)
+         # workaround for smooth movement
+        if sin(theta5) < 0:
+            theta4 = atan2(-r33, r13)
+            theta6 = atan2(r22, -r21)
+        else:
+            theta4 = atan2(r33, -r13)
+            theta6 = atan2(-r22, r21)
+    else:
+        if r23 == 1:
+            theta5 = 0
+            theta4 = -theta6 + atan2(-r12, -r32)
+        else:
+            theta5 = 0
+            theta4 = theta6 - atan2(r12, -r32)
+    ```
 
-1. Find Find θ<sub>1</sub>
-
-1. Find Find θ<sub>1</sub>

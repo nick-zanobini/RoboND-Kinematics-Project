@@ -114,5 +114,5 @@ T0_3 = simplify(T0_2 * T2_3)
 # Correction Rotation Matrix
 R_corr = rot_z(pi) * rot_y(-pi / 2)
 P_2_sym = T0_2 * Matrix([0, 0, 0, 1])
-R0_3 = simplify((T0_3[0:3, 0:3]).inv())
+R0_3_inv_sym = simplify((T0_3[0:3, 0:3]).inv())
 R0_6_sym = simplify(rot_z(y) * rot_y(p) * rot_x(r))
