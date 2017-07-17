@@ -1,5 +1,7 @@
 ## Project: Kinematics Pick & Place
 ---
+#### The video of my code in action can be seen [here](https://youtu.be/JGvfU6yCrSk)  
+---
 
 To run projects from this repository you need version 7.7.0+
 If your gazebo version is not 7.7.0+, perform the update as follows:
