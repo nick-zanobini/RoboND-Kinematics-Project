@@ -88,6 +88,8 @@ Once Gazebo and rviz are up and running, make sure you see following in the gaze
 [combine_frame]: ./misc_images/combined.jpg
 [combine_frame1]: ./misc_images/combined1.jpg
 [forward_demo]: ./misc_images/forward_demo.jpg
+[theta2_img]: ./misc_images/theta2.jpg
+[theta3_img]: ./misc_images/theta3.jpg
 
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/972/view) Points
@@ -236,7 +238,7 @@ The function N() is used to evaluate pi throughout the program.
      ```python
      theta1 = N(atan2(P_WC[1], P_WC[0]))
      ```
-
+![alt text][theta3_img]  
 1. Find Find θ<sub>3</sub>
     ```python
     # Calculate position of joint 3
@@ -256,7 +258,7 @@ The function N() is used to evaluate pi throughout the program.
     theta_32 = atan2(sqrt(1 - D1**2), D1)
     theta3 = N((theta_32 + theta_31 - (pi / 2)).subs(s))
     ```
-
+![alt text][theta2_img]  
 1. Find Find θ<sub>2</sub>
     ```python
     # Calculate theta2
