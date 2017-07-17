@@ -9,6 +9,6 @@ sleep 5 &&
 #x-terminal-emulator -e roslaunch kuka_arm inverse_kinematics.launch
 roslaunch kuka_arm inverse_kinematics.launch &
 sleep 5 &&
-x-terminal-emulator -e rosrun kuka_arm IK_server.py #&
-#sleep 5 &&
-#x-terminal-emulator -e 
+x-terminal-emulator -e rosrun kuka_arm IK_server.py &
+sleep 5 &&
+x-terminal-emulator -e rosrun rqt_cylinder_counter rqt_cylinder_counter

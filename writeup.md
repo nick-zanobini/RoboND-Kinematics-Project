@@ -1,6 +1,6 @@
-## Project: Kinematics Pick & Place
+Project: Kinematics Pick & Place
 ---
-#### The video of my code in action can be seen [here](https://youtu.be/JGvfU6yCrSk)  
+The video of my code in action can be seen [here](https://youtu.be/JGvfU6yCrSk)  
 ---
 
 To run projects from this repository you need version 7.7.0+
@@ -87,6 +87,7 @@ Once Gazebo and rviz are up and running, make sure you see following in the gaze
 [world_frame]: ./misc_images/world_frame.JPG
 [combine_frame]: ./misc_images/combined.jpg
 [combine_frame1]: ./misc_images/combined1.jpg
+[forward_demo]: ./misc_images/forward_demo.jpg
 
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/972/view) Points
@@ -96,7 +97,10 @@ Once Gazebo and rviz are up and running, make sure you see following in the gaze
 ### Kinematic Analysis
 #### 1. Run the forward_kinematics demo and evaluate the kr210.urdf.xacro file to perform kinematic analysis of Kuka KR210 robot and derive its DH parameters.
 
-The DH parameters were derived from the arm according to these axis assignments
+`roslaunch kuka_arm forward_kinematics.launch`:
+![alt text][forward_demo]
+
+The DH parameters were derived from the arm according to these axis assignments:  
 ![alt text][relative_joint_locations]  
 
 ##### Table 1: Relative Position of joint<sub>i-1</sub> to joint <sub>i</sub> in meters (m).  
@@ -229,24 +233,24 @@ The function N() is used to evaluate pi throughout the program.
 
 1. Find θ<sub>1</sub>
 
-     ```
+     ```python
      theta1 = N(atan2(P_WC[1], P_WC[0]))
      ```
 
 1. Find Find θ<sub>3</sub>
-    ```
-    # Calculate theta3
+    ```python
+    # Calculate position of joint 3
     P0_2 = P_2_sym.evalf(subs={q1: theta1})
     x_c, y_c, z_c = P_WC - P0_2[0:3, :]
     ```
-    ```
+    ```python
     # link lengths
     l_23 = a2
     l_35 = sqrt(a3**2 + d4**2)
     l_25 = sqrt(x_c**2 + y_c**2 + z_c**2)
     ```
-    ```
-    # Intermediate angles for theta3
+    ```python
+    # Intermediate angles for theta3 and theta3
     D1 = (l_25**2 - l_23**2 - l_35**2) / (2 * l_23 * l_35)
     theta_31 = atan2(a3, d4)
     theta_32 = atan2(sqrt(1 - D1**2), D1)
@@ -254,7 +258,7 @@ The function N() is used to evaluate pi throughout the program.
     ```
 
 1. Find Find θ<sub>2</sub>
-    ```
+    ```python
     # Calculate theta2
     D2 = (l_23**2 - l_35**2 + l_25**2) / (2 * l_23 * l_25)
     theta_21 = atan2(sqrt(1 - D2**2), D2)
@@ -263,7 +267,7 @@ The function N() is used to evaluate pi throughout the program.
     ```
 
 1. Find Find θ<sub>4</sub>, θ<sub>5</sub> and θ<sub>6</sub>
-    ```
+    ```python
     # Rotation Matrices for theta4 theta5 and theta6 calculations
     R_corr = rot_z(pi) * rot_y(-pi / 2)
     R0_6 = R0_6[0:3, 0:3] * R_corr
@@ -271,13 +275,13 @@ The function N() is used to evaluate pi throughout the program.
     R0_3_inv = R0_3_inv_sym.evalf(subs={q1: theta1, q2: theta2, q3: theta3})
     R3_6 = np.array(R0_3_inv * R0_6).astype(np.float64)
     ```
-    ```
+    ```python
     # Individual Rotation Matrix elements for theta4 theta5 and theta6 calculations
     r12, r13 = R3_6[0, 1], R3_6[0, 2]
     r21, r22, r23 = R3_6[1, 0], R3_6[1, 1], R3_6[1, 2]
     r32, r33 = R3_6[2, 1], R3_6[2, 2]
     ```
-    ```
+    ```python
     # Calculate theta4, theta5 and theta6
     if np.abs(r23) is not 1:
         theta5 = atan2(sqrt(r13**2 + r33**2), r23)
