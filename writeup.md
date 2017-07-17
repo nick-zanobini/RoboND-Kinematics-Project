@@ -80,8 +80,8 @@ Once Gazebo and rviz are up and running, make sure you see following in the gaze
 
 [//]: # (Image References)
 
-[relative_joint_locations]: ./misc_images/relJointLocations.JPG
-[URDF_frame]: ./misc_images/URDF_frame.JPG
+[relative_joint_locations]: ./misc_images/relJointLocations.jpg
+[URDF_frame]: ./misc_images/URDF_frame.jpg
 [world_frame]: ./misc_images/world_frame.JPG
 [combine_frame]: ./misc_images/combined.jpg
 [combine_frame1]: ./misc_images/combined1.jpg
@@ -95,9 +95,10 @@ Once Gazebo and rviz are up and running, make sure you see following in the gaze
 #### 1. Run the forward_kinematics demo and evaluate the kr210.urdf.xacro file to perform kinematic analysis of Kuka KR210 robot and derive its DH parameters.
 
 The DH parameters were derived from the arm according to these axis assignments
-![alt text][relative_joint_locations]
+![alt text][relative_joint_locations]  
 
-##### Table 1: Relative Position of joint<sub>i-1</sub> to joint <sub>i</sub> in meters (m). 
+##### Table 1: Relative Position of joint<sub>i-1</sub> to joint <sub>i</sub> in meters (m).  
+
 
 | joint | x | y | z | roll | pitch | yaw |
 | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
@@ -107,7 +108,8 @@ joint<sub>3</sub> | 0 | 0 | 1.25 | 0 | 0 | 0 |
 joint<sub>4</sub> | 0.96 | 0 | -0.54 | 0 | 0 | 0 |
 joint<sub>5</sub> | 0.54 | 0 | 0 | 0 | 0 | 0 |
 joint<sub>6</sub> | 0.193 | 0 | 0 | 0 | 0 | 0 |
-gripper | 0.11 | 0 | 0 | 0 | 0 | 0 |
+gripper | 0.11 | 0 | 0 | 0 | 0 | 0 |  
+
 
 ##### Table 2: Modified DH Parameters
 α<sub>i-1</sub>: twist angle, angle between Ζ<sub>i-1</sub> and Ζ measured about Χ<sub>i-1</sub>  
@@ -205,7 +207,9 @@ Inverse Kinematics: `R = R0_3 * R3_6`
 Inverse Position Kinematics: `R0_3`  : 0<sub>1</sub>, 0<sub>2</sub>, 0<sub>3</sub>  
 Inverse Orientation Kinematics: `R3_6 = R0_3.inv() * R0_6` : 0<sub>4</sub>, 0<sub>5</sub>, 0<sub>6</sub>
 
-Wrist Center: `P_EE - d7 * R0_6 * [0;0;1]
+Wrist Center: `P_EE - d7 * R0_6 * [0;0;1]`  
+
+
  
 ### Project Implementation
 
